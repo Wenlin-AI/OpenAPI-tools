@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 import requests
 from fastapi import HTTPException
 from dotenv import load_dotenv
+import html2text
 
 # Load environment variables from .env file
 load_dotenv()
@@ -30,6 +31,22 @@ class ConfluenceClient:
         assert self.username is not None and self.token is not None, "Username and token must not be None"
         self.session.auth = (self.username, self.token)
         self.session.headers.update({"Content-Type": "application/json"})
+
+    def _html_to_markdown(self, html: str) -> str:
+        """Convert Confluence HTML content to Markdown."""
+        return html2text.html2text(html)
+
+    def _ensure_allowed(self, page_id: str) -> None:
+        """Ensure the given page is within the allowed parent scope."""
+        if not self.parent_page:
+            return
+        cql = f"id={page_id} and ancestor={self.parent_page}"
+        rsp = self.search(cql, limit=1)
+        if rsp.get("size", 0) == 0:
+            raise HTTPException(
+                status_code=403,
+                detail="Operation not allowed on a page outside the configured parent scope",
+            )
 
     def _make_request(
         self,
@@ -114,17 +131,50 @@ class ConfluenceClient:
         cql = f"space={self.space_key} and type=page"
         if self.parent_page:
             cql += f" and ancestor={self.parent_page}"
-        print(cql)
-        data = self.search(cql, limit=1000)
-        return data.get("results", [])
+        data = self.search(
+            cql,
+            limit=1000,
+            expand=["title", "url", "content.body.export_view", "content.ancestors"],
+        )
+        filtered: List[Dict[str, Any]] = []
+        for result in data.get("results", []):
+            if "title" in result and "content" in result:
+                ancestors = result["content"].get("ancestors", [])
+                filtered.append(
+                    {
+                        "id": result["content"]["id"],
+                        "title": result["title"],
+                        "content": self._html_to_markdown(
+                            result["content"]["body"]["export_view"]["value"]
+                        ),
+                        "url": data.get("_links", {}).get("base", "") + result["url"],
+                        "last_modified": result.get("friendlyLastModified"),
+                        "parent_page_id": ancestors[-1]["id"] if ancestors else None,
+                        "parent_page_title": ancestors[-1]["title"] if ancestors else None,
+                    }
+                )
+        return filtered
 
-    def create_page(self, title: str, content: str) -> Dict[str, Any]:
+    def create_page(
+        self, title: str, content: str, parent_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         if not self.space_key:
             raise HTTPException(status_code=500, detail="CONFLUENCE_SPACE_KEY not set")
-        parent_id = self.parent_page
-        if parent_id:
-            cql = f"id={parent_id}"
-            self.search(cql, limit=1)
+
+        if parent_id is None:
+            parent_id = self.parent_page
+
+        if self.parent_page:
+            # ensure the chosen parent is within the allowed scope
+            target_id = parent_id or self.parent_page
+            if target_id != self.parent_page:
+                cql = f"id={target_id} and ancestor={self.parent_page}"
+                rsp = self.search(cql, limit=1)
+                if rsp.get("size", 0) == 0:
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Parent page not within allowed scope",
+                    )
         data = {
             "type": "page",
             "title": title,
@@ -136,6 +186,7 @@ class ConfluenceClient:
         return self._make_request("rest/api/content", method="POST", json=data)
 
     def update_page(self, page_id: str, title: Optional[str], content: Optional[str]) -> Dict[str, Any]:
+        self._ensure_allowed(page_id)
         page = self.get_page(page_id)
         version = page.get("version", {}).get("number", 1)
         new_version = version + 1
@@ -154,4 +205,5 @@ class ConfluenceClient:
         return self._make_request(f"rest/api/content/{page_id}", method="PUT", json=data)
 
     def delete_page(self, page_id: str) -> None:
+        self._ensure_allowed(page_id)
         self._make_request(f"rest/api/content/{page_id}", method="DELETE")

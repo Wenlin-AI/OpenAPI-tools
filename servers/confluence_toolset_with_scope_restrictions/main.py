@@ -12,6 +12,7 @@ app = FastAPI(title="Confluence API")
 class PageCreate(BaseModel):
     title: str
     content: str
+    parent_id: Optional[str] = Field(None, description="Parent page ID")
 
 
 class PageUpdate(BaseModel):
@@ -31,7 +32,7 @@ def read_page(page_id: str):
 
 @app.post("/pages", summary="Create page")
 def create_page(data: PageCreate):
-    return client.create_page(data.title, data.content)
+    return client.create_page(data.title, data.content, data.parent_id)
 
 
 @app.put("/pages/{page_id}", summary="Update page")
