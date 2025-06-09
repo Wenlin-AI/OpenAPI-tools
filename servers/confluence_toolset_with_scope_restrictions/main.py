@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from .confluence_client import ConfluenceClient
+from confluence_client import ConfluenceClient
 
 client = ConfluenceClient()
 app = FastAPI(title="Confluence API")

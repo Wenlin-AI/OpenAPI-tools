@@ -3,6 +3,10 @@ from typing import Any, Dict, List, Optional
 
 import requests
 from fastapi import HTTPException
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class ConfluenceClient:
@@ -13,14 +17,17 @@ class ConfluenceClient:
         self.username = os.environ.get("CONFLUENCE_USERNAME")
         self.token = os.environ.get("CONFLUENCE_TOKEN")
         self.space_key = os.environ.get("CONFLUENCE_SPACE_KEY")
-        self.parent_page = os.environ.get("CONFLUENCE_PARENT_PAGE")
+        self.parent_page = os.environ.get("CONFLUENCE_PARENT_PAGE", None)
         if not all([self.url, self.username, self.token]):
             raise RuntimeError(
                 "CONFLUENCE_URL, CONFLUENCE_USERNAME and CONFLUENCE_TOKEN must be set"
             )
-        if not self.url.endswith('/'):
+        # Make sure url is not None before checking endswith
+        if self.url and not self.url.endswith('/'):
             self.url += '/'
         self.session = requests.Session()
+        # Ensure username and token are not None before setting auth
+        assert self.username is not None and self.token is not None, "Username and token must not be None"
         self.session.auth = (self.username, self.token)
         self.session.headers.update({"Content-Type": "application/json"})
 
