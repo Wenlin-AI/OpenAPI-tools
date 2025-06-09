@@ -114,6 +114,7 @@ class ConfluenceClient:
         cql = f"space={self.space_key} and type=page"
         if self.parent_page:
             cql += f" and ancestor={self.parent_page}"
+        print(cql)
         data = self.search(cql, limit=1000)
         return data.get("results", [])
 
