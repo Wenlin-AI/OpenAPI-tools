@@ -34,8 +34,13 @@ GET /pages/12345/inline-comments?body_format=storage
 
 ### Replying to Inline Comments
 
-Send a reply using `/inline-comments/{comment_id}/reply` with the reply text in
-the request body.
+Send a reply using `/inline-comments/{comment_id}/reply`.
+Provide the reply text using the `body` query parameter.
+
+```bash
+curl -X POST "http://localhost:8282/inline-comments/123/reply?body=Thanks" \
+  -H "accept: application/json"
+```
 
 ### Footer Comments
 

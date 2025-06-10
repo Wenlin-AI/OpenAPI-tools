@@ -217,12 +217,13 @@ class ConfluenceClient:
         return self._make_request(endpoint, params=params)
 
     def reply_inline_comment(self, comment_id: str, body: str) -> dict:
-        """Reply to an inline comment."""
-        endpoint = f"api/v2/inline-comments/{comment_id}/children"
+        """Reply to an inline comment using the v2 API."""
+        endpoint = "api/v2/inline-comments"
         data = {
+            "parentCommentId": comment_id,
             "body": {
                 "storage": {"value": body, "representation": "storage"}
-            }
+            },
         }
         return self._make_request(endpoint, method="POST", json=data)
 
