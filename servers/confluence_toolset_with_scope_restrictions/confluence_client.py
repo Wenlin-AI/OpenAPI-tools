@@ -30,7 +30,6 @@ class ConfluenceClient:
         if self.username is None or self.token is None:
             raise RuntimeError("Username and token must not be None")
         self.session.auth = (self.username, self.token)
-        self.session.auth = (self.username, self.token)
         self.session.headers.update({"Content-Type": "application/json"})
 
     def _html_to_markdown(self, html: str) -> str:
