@@ -27,7 +27,7 @@ def list_pages():
 
 @app.get("/pages/{page_id}", summary="Read page")
 def read_page(page_id: str):
-    return client.get_page(page_id)
+    return client.get_page_summary(page_id)
 
 
 @app.post("/pages", summary="Create page")
