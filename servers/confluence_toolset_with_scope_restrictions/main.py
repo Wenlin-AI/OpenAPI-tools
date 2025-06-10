@@ -26,8 +26,8 @@ def list_pages():
 
 
 @app.get("/pages/{page_id}", summary="Read page")
-def read_page(page_id: str):
-    return client.get_page_summary(page_id)
+def read_page(page_id: str, include_children: bool = False):
+    return client.get_page_summary(page_id, include_children=include_children)
 
 
 @app.post("/pages", summary="Create page")

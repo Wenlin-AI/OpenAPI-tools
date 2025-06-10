@@ -40,6 +40,8 @@ The `/pages` endpoint accepts an optional `parent_id` field allowing you to spec
 }
 ```
 
+Add the query parameter `include_children=true` to also return all descendant pages in a nested `children` field.
+
 ### Fetching Inline Comments
 
 Use `/pages/{page_id}/inline-comments` to list inline comments on a page. Include

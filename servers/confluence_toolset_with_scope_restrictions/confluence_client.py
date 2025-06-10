@@ -127,7 +127,31 @@ class ConfluenceClient:
         endpoint = f"rest/api/content/{page_id}"
         return self._make_request(endpoint, params={"expand": "body.storage,version"})
 
-    def get_page_summary(self, page_id: str) -> Dict[str, Any]:
+    def _get_children_recursive(self, page_id: str) -> List[Dict[str, Any]]:
+        """Recursively fetch all child pages for a page."""
+        endpoint = f"rest/api/content/{page_id}/child/page"
+        params = {"expand": "body.export_view,ancestors,version"}
+        data = self._make_request(endpoint, params=params)
+        base = data.get("_links", {}).get("base", "")
+        children: List[Dict[str, Any]] = []
+        for child in data.get("results", []):
+            ancestors = child.get("ancestors", [])
+            item = {
+                "id": child.get("id"),
+                "title": child.get("title"),
+                "content": self._html_to_markdown(child["body"]["export_view"]["value"]),
+                "url": base + child.get("_links", {}).get("webui", ""),
+                "last_modified": child.get("version", {}).get("friendlyWhen"),
+                "parent_page_id": ancestors[-1]["id"] if ancestors else None,
+                "parent_page_title": ancestors[-1]["title"] if ancestors else None,
+            }
+            descendants = self._get_children_recursive(child["id"])
+            if descendants:
+                item["children"] = descendants
+            children.append(item)
+        return children
+
+    def get_page_summary(self, page_id: str, include_children: bool = False) -> Dict[str, Any]:
         """Return key details for a page with content converted to Markdown."""
         endpoint = f"rest/api/content/{page_id}"
         expansions = ["body.export_view", "ancestors", "version"]
@@ -137,7 +161,7 @@ class ConfluenceClient:
         parent_title = ancestors[-1]["title"] if ancestors else None
         base = data.get("_links", {}).get("base", "")
         url = base + data.get("_links", {}).get("webui", "")
-        return {
+        page = {
             "id": data.get("id"),
             "title": data.get("title"),
             "content": self._html_to_markdown(data["body"]["export_view"]["value"]),
@@ -147,6 +171,9 @@ class ConfluenceClient:
             "parent_page_title": parent_title,
             "modifier": data.get("version", {}).get("by", {}).get("displayName"),
         }
+        if include_children:
+            page["children"] = self._get_children_recursive(page_id)
+        return page
 
     def list_pages(self) -> List[Dict[str, Any]]:
         cql = f"space={self.space_key} and type=page"
