@@ -23,6 +23,23 @@ Then visit [http://localhost:8000/docs](http://localhost:8000/docs).
 
 The `/pages` endpoint accepts an optional `parent_id` field allowing you to specify under which Confluence page the new page should be created. When scope restrictions are enabled, the provided `parent_id` must be a descendant of `CONFLUENCE_PARENT_PAGE`.
 
+### Reading Pages
+
+`GET /pages/{page_id}` returns a page summary with Markdown content:
+
+```json
+{
+  "id": "12345",
+  "title": "Example Page",
+  "content": "# Heading\nBody...",
+  "url": "https://your-site.atlassian.net/wiki/....",
+  "last_modified": "Yesterday",
+  "parent_page_id": "67890",
+  "parent_page_title": "Parent",
+  "modifier": "Alice"
+}
+```
+
 ### Fetching Inline Comments
 
 Use `/pages/{page_id}/inline-comments` to list inline comments on a page. Include

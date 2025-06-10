@@ -128,6 +128,27 @@ class ConfluenceClient:
         endpoint = f"rest/api/content/{page_id}"
         return self._make_request(endpoint, params={"expand": "body.storage,version"})
 
+    def get_page_summary(self, page_id: str) -> Dict[str, Any]:
+        """Return key details for a page with content converted to Markdown."""
+        endpoint = f"rest/api/content/{page_id}"
+        expansions = ["body.export_view", "ancestors", "version"]
+        data = self._make_request(endpoint, params={"expand": ",".join(expansions)})
+        ancestors = data.get("ancestors", [])
+        parent_id = ancestors[-1]["id"] if ancestors else None
+        parent_title = ancestors[-1]["title"] if ancestors else None
+        base = data.get("_links", {}).get("base", "")
+        url = base + data.get("_links", {}).get("webui", "")
+        return {
+            "id": data.get("id"),
+            "title": data.get("title"),
+            "content": self._html_to_markdown(data["body"]["export_view"]["value"]),
+            "url": url,
+            "last_modified": data.get("version", {}).get("friendlyWhen"),
+            "parent_page_id": parent_id,
+            "parent_page_title": parent_title,
+            "modifier": data.get("version", {}).get("by", {}).get("displayName"),
+        }
+
     def list_pages(self) -> List[Dict[str, Any]]:
         cql = f"space={self.space_key} and type=page"
         if self.parent_page:
