@@ -27,8 +27,9 @@ class ConfluenceClient:
         if self.url and not self.url.endswith('/'):
             self.url += '/'
         self.session = requests.Session()
-        # Ensure username and token are not None before setting auth
-        assert self.username is not None and self.token is not None, "Username and token must not be None"
+        if self.username is None or self.token is None:
+            raise RuntimeError("Username and token must not be None")
+        self.session.auth = (self.username, self.token)
         self.session.auth = (self.username, self.token)
         self.session.headers.update({"Content-Type": "application/json"})
 
