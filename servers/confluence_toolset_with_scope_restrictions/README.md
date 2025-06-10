@@ -31,3 +31,13 @@ the `body_format` query parameter to retrieve the comment body, e.g.
 ```bash
 GET /pages/12345/inline-comments?body_format=storage
 ```
+
+### Replying to Inline Comments
+
+Send a reply using `/inline-comments/{comment_id}/reply` with the reply text in
+the request body.
+
+### Footer Comments
+
+Fetch footer comments for a page with `/pages/{page_id}/footer-comments`. Submit
+a new footer comment using the same path with `POST`.

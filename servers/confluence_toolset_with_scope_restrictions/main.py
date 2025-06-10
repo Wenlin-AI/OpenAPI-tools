@@ -57,3 +57,27 @@ def search(cql: str, limit: int = 100):
 )
 def list_inline_comments(page_id: str, body_format: str = "storage"):
     return client.get_inline_comments(page_id, body_format=body_format)
+
+
+@app.post(
+    "/inline-comments/{comment_id}/reply",
+    summary="Reply to an inline comment",
+)
+def reply_inline(comment_id: str, body: str):
+    return client.reply_inline_comment(comment_id, body)
+
+
+@app.get(
+    "/pages/{page_id}/footer-comments",
+    summary="List footer comments for a page",
+)
+def list_footer_comments(page_id: str, body_format: str = "storage"):
+    return client.get_footer_comments(page_id, body_format=body_format)
+
+
+@app.post(
+    "/pages/{page_id}/footer-comments",
+    summary="Add a footer comment to a page",
+)
+def add_footer_comment(page_id: str, body: str):
+    return client.add_footer_comment(page_id, body)

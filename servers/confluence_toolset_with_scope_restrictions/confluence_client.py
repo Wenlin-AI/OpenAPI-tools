@@ -212,6 +212,34 @@ class ConfluenceClient:
         self, page_id: str, body_format: str | None = "storage"
     ) -> dict:
         """Fetch inline comments for the specified page."""
-        endpoint = f"wiki/api/v2/pages/{page_id}/inline-comments"
+        endpoint = f"api/v2/pages/{page_id}/inline-comments"
         params = {"body-format": body_format} if body_format else None
         return self._make_request(endpoint, params=params)
+
+    def reply_inline_comment(self, comment_id: str, body: str) -> dict:
+        """Reply to an inline comment."""
+        endpoint = f"api/v2/inline-comments/{comment_id}/children"
+        data = {
+            "body": {
+                "storage": {"value": body, "representation": "storage"}
+            }
+        }
+        return self._make_request(endpoint, method="POST", json=data)
+
+    def get_footer_comments(
+        self, page_id: str, body_format: str | None = "storage"
+    ) -> dict:
+        """Get footer comments for a page."""
+        endpoint = f"api/v2/pages/{page_id}/footer-comments"
+        params = {"body-format": body_format} if body_format else None
+        return self._make_request(endpoint, params=params)
+
+    def add_footer_comment(self, page_id: str, body: str) -> dict:
+        """Add a footer comment to a page."""
+        endpoint = f"api/v2/pages/{page_id}/footer-comments"
+        data = {
+            "body": {
+                "storage": {"value": body, "representation": "storage"}
+            }
+        }
+        return self._make_request(endpoint, method="POST", json=data)
