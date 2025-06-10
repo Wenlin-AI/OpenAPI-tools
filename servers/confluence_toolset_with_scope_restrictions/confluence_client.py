@@ -237,10 +237,11 @@ class ConfluenceClient:
 
     def add_footer_comment(self, page_id: str, body: str) -> dict:
         """Add a footer comment to a page."""
-        endpoint = f"api/v2/pages/{page_id}/footer-comments"
+        endpoint = "api/v2/footer-comments"
         data = {
+            "pageId": page_id,
             "body": {
                 "storage": {"value": body, "representation": "storage"}
-            }
+            },
         }
         return self._make_request(endpoint, method="POST", json=data)

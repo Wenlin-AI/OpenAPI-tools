@@ -46,3 +46,8 @@ curl -X POST "http://localhost:8282/inline-comments/123/reply?body=Thanks" \
 
 Fetch footer comments for a page with `/pages/{page_id}/footer-comments`. Submit
 a new footer comment using the same path with `POST`.
+
+```bash
+curl -X POST "http://localhost:8282/pages/123/footer-comments?body=Nice%20page" \
+  -H "accept: application/json"
+```
