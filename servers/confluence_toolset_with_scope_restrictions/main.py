@@ -49,3 +49,11 @@ def remove_page(page_id: str):
 @app.get("/search", summary="Search pages")
 def search(cql: str, limit: int = 100):
     return client.search(cql_query=cql, limit=limit)
+
+
+@app.get(
+    "/pages/{page_id}/inline-comments",
+    summary="List inline comments for a page",
+)
+def list_inline_comments(page_id: str, body_format: str = "storage"):
+    return client.get_inline_comments(page_id, body_format=body_format)

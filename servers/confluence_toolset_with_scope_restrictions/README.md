@@ -22,3 +22,12 @@ Then visit [http://localhost:8000/docs](http://localhost:8000/docs).
 ### Creating Pages
 
 The `/pages` endpoint accepts an optional `parent_id` field allowing you to specify under which Confluence page the new page should be created. When scope restrictions are enabled, the provided `parent_id` must be a descendant of `CONFLUENCE_PARENT_PAGE`.
+
+### Fetching Inline Comments
+
+Use `/pages/{page_id}/inline-comments` to list inline comments on a page. Include
+the `body_format` query parameter to retrieve the comment body, e.g.
+
+```bash
+GET /pages/12345/inline-comments?body_format=storage
+```

@@ -207,3 +207,11 @@ class ConfluenceClient:
     def delete_page(self, page_id: str) -> None:
         self._ensure_allowed(page_id)
         self._make_request(f"rest/api/content/{page_id}", method="DELETE")
+
+    def get_inline_comments(
+        self, page_id: str, body_format: str | None = "storage"
+    ) -> dict:
+        """Fetch inline comments for the specified page."""
+        endpoint = f"wiki/api/v2/pages/{page_id}/inline-comments"
+        params = {"body-format": body_format} if body_format else None
+        return self._make_request(endpoint, params=params)
