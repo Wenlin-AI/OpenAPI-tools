@@ -1,12 +1,30 @@
 from typing import Optional
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from confluence_client import ConfluenceClient
 
 client = ConfluenceClient()
-app = FastAPI(title="Confluence API")
+app = FastAPI(
+    title="Confluence toolset",
+    description=(
+        "This API toolset is created to provide AI agents with the ability to "
+        "work with confluence pages in limited scope. Scope is limited under "
+        "certain parent page and modifications work only under that page"
+    ),
+    version="0.0.1",
+)
+
+# Allow all origins so the API can be called from any client
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class PageCreate(BaseModel):

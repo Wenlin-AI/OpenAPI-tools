@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import tiktoken
 
@@ -6,6 +7,15 @@ app = FastAPI(
     title="Token Counter API",
     version="0.0.1",
     description="Simple API to count tokens for a given text"
+)
+
+# Allow all origins so the API can be called from any client
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 class TokenCountInput(BaseModel):
