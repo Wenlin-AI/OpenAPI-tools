@@ -57,3 +57,8 @@ $ ./run.sh [server_name]
 ## Servers
 - `token_counter` – Simple API that counts tokens using tiktoken
 - `confluence_toolset_with_scope_restrictions` – API for reading and writing Confluence Cloud pages
+
+## Design Notes
+
+See [docs/cors-design.md](docs/cors-design.md) for background on why CORS is
+enabled on the example servers and how to tighten it for production deployments.
